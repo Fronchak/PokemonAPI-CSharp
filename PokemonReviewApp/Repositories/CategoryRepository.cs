@@ -17,6 +17,12 @@ namespace PokemonReviewApp.Repositories
             return _dataContext.Categories.Any((category) => category.Id == id);
         }
 
+        public bool CreateCategory(Category category)
+        {
+            _dataContext.Categories.Add(category);
+            return Save();
+        }
+
         public ICollection<Category> GetCategories()
         {
             return _dataContext.Categories
@@ -35,6 +41,12 @@ namespace PokemonReviewApp.Repositories
                 .Where((pc) => pc.CategoryId == categoryId)
                 .Select((pc) => pc.Pokemon)
                 .ToList();
+        }
+
+        public bool Save()
+        {
+            int saved = _dataContext.SaveChanges();
+            return saved > 0;
         }
     }
 }
