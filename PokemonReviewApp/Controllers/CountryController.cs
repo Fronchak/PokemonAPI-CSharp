@@ -106,5 +106,59 @@ namespace PokemonReviewApp.Controllers
 
             return NoContent();
         }
+
+        [HttpPut("{countryId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateCountry([FromBody] CountryDTO countryDTO, [FromRoute] string countryId)
+        {
+            if(countryDTO == null)
+            {
+                return BadRequest();
+            }
+
+            int id = 0;
+            try
+            {
+                id = int.Parse(countryId);
+            }
+            catch (Exception)
+            {
+                return NotFound();
+            }
+
+            if(!_countryRepository.CountryExists(id))
+            {
+                return NotFound();
+            }
+
+            bool countryExists = _countryRepository.GetCountries()
+                .Where((country) => country.Name.Trim().ToUpper() == countryDTO.Name.Trim().ToUpper())
+                .Where((country) => country.Id != id)
+                .Any();
+
+            if (countryExists)
+            {
+                ModelState.AddModelError("", "Country already exists");
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, ModelState);
+            }
+
+            Country country = _countryRepository.GetCountry(id);
+            country.Name = countryDTO.Name;
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            if (!_countryRepository.UpdateCountry(country))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }

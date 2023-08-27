@@ -143,7 +143,6 @@ namespace PokemonReviewApp.Controllers
 
             Category category = _categoryRepository.GetCategory(id);
             category.Name = categoryDTO.Name;
-            category.Id = id;
 
             if(!ModelState.IsValid)
             {
