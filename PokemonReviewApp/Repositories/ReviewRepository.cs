@@ -13,6 +13,11 @@ namespace PokemonReviewApp.Repositories
             _dataContext = dataContext;
         }
 
+        public bool CreateReview(Review review)
+        {
+            throw new NotImplementedException();
+        }
+
         public Review GetReview(int id)
         {
             return _dataContext.Reviews.Find(id);
@@ -33,6 +38,12 @@ namespace PokemonReviewApp.Repositories
         public bool ReviewExists(int id)
         {
             return _dataContext.Reviews.Any((review) => review.Id == id);
+        }
+
+        public bool Save()
+        {
+            int saved = _dataContext.SaveChanges();
+            return saved > 0;
         }
     }
 }

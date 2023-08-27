@@ -13,5 +13,9 @@ namespace PokemonReviewApp.Interfaces
         ICollection<Pokemon> GetPokemonsByOwner(int ownerId);
 
         bool OwnerExists(int id);
+
+        bool CreateOwner(Owner owner);
+
+        bool Save();
     }
 }

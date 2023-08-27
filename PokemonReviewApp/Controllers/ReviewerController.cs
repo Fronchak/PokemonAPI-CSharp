@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PokemonReviewApp.Dto;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace PokemonReviewApp.Controllers
 {
@@ -64,6 +65,32 @@ namespace PokemonReviewApp.Controllers
             }
 
             return Ok(reviewDTOs);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateReviewer([FromBody] ReviewerDTO reviewerDTO)
+        {
+            if(reviewerDTO == null)
+            {
+                return BadRequest();
+            }
+
+            Reviewer reviewer = _mapper.Map<Reviewer>(reviewerDTO);
+
+            if(!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            if(!_reviewerRepository.CreateReviewer(reviewer))
+            {
+                ModelState.AddModelError("", "Something went wrong when saving");
+                return StatusCode(StatusCodes.Status500InternalServerError, ModelState);
+            }
+
+            return NoContent();
         }
     }
 }

@@ -4,12 +4,35 @@ using PokemonReviewApp.Models;
 
 namespace PokemonReviewApp.Repositories
 {
-    public class PokemonRepository : IPokemonRepositoryInterface
+    public class PokemonRepository : IPokemonRepository
     {
         private readonly DataContext _context;
         public PokemonRepository(DataContext context)
         {
             _context = context;
+        }
+
+        public bool CreatePokemon(int ownerId, int categoryId, Pokemon pokemon)
+        {
+            Owner owner = _context.Owners.Find(ownerId);
+            Category category = _context.Categories.Find(categoryId);
+
+            PokemonOwner pokemonOwner = new PokemonOwner()
+            {
+                Owner = owner,
+                Pokemon = pokemon
+            };
+
+            PokemonCategory pokemonCategory = new PokemonCategory()
+            {
+                Pokemon = pokemon,
+                Category = category
+            };
+
+            _context.PokemonOwners.Add(pokemonOwner);
+            _context.PokemonCategories.Add(pokemonCategory);
+            _context.Pokemons.Add(pokemon);
+            return Save();
         }
 
         public Pokemon GetPokemon(int id)
@@ -46,6 +69,12 @@ namespace PokemonReviewApp.Repositories
         public bool PokemonExists(int pokeId)
         {
             return _context.Pokemons.Any((pokemon) => pokemon.Id == pokeId);
+        }
+
+        public bool Save()
+        {
+            int saved = _context.SaveChanges();
+            return saved > 0;
         }
     }
 }

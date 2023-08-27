@@ -45,5 +45,17 @@ namespace PokemonReviewApp.Repositories
             return _dataContext.Owners
                 .Any((owner) => owner.Id == id);
         }
+
+        public bool CreateOwner(Owner owner)
+        {
+            _dataContext.Owners.Add(owner);
+            return Save();
+        }
+
+        public bool Save()
+        {
+            int saved = _dataContext.SaveChanges();
+            return saved > 0;
+        }
     }
 }

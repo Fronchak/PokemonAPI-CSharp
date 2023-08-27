@@ -10,13 +10,19 @@ namespace PokemonReviewApp.Controllers
     [ApiController]
     public class PokemonController : Controller
     {
-        private readonly IPokemonRepositoryInterface _pokemonRepository;
+        private readonly IPokemonRepository _pokemonRepository;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly IOwnerRepository _ownerRepository;
         private readonly IMapper _mapper;
 
-        public PokemonController(IPokemonRepositoryInterface pokemonRespository, 
+        public PokemonController(IPokemonRepository pokemonRespository, 
+            ICategoryRepository categoryRepository,
+            IOwnerRepository ownerRepository,
             IMapper mapper)
         {
             _pokemonRepository = pokemonRespository;
+            _categoryRepository = categoryRepository;
+            _ownerRepository = ownerRepository;
             _mapper = mapper;
         }
 
@@ -71,5 +77,39 @@ namespace PokemonReviewApp.Controllers
             return Ok(rating);
         }
 
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreatePokemon([FromBody] PokemonInsertDTO pokemonInsertDTO)
+        {
+            if(pokemonInsertDTO == null)
+            {
+                return BadRequest();
+            }
+
+            if(!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            if(!_categoryRepository.CategoryExists(pokemonInsertDTO.CategoryId))
+            {
+                return NotFound("Category not found");
+            }
+
+            if(!_ownerRepository.OwnerExists(pokemonInsertDTO.OwnerId))
+            {
+                return NotFound("Owner not found");
+            }
+
+            Pokemon pokemon = _mapper.Map<Pokemon>(pokemonInsertDTO);
+            if (!_pokemonRepository.CreatePokemon(pokemonInsertDTO.OwnerId, pokemonInsertDTO.CategoryId, pokemon))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(StatusCodes.Status500InternalServerError, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }

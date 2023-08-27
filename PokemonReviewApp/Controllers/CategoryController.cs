@@ -105,5 +105,58 @@ namespace PokemonReviewApp.Controllers
 
             return NoContent();
         }
+
+        [HttpPut("{categoryId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult UpdateCategory([FromBody] CategoryDTO categoryDTO, [FromRoute] string categoryId)
+        {
+            if (categoryDTO == null)
+            {
+                return BadRequest();
+            }
+            int id = 0;
+            try
+            {
+                id = int.Parse(categoryId);
+            }
+            catch(Exception e)
+            {
+                return NotFound();
+            }
+
+            if(!_categoryRepository.CategoryExists(id))
+            {
+                return NotFound();
+            }
+
+            bool categoryExists = _categoryRepository.GetCategories()
+                .Where((category) => category.Name.Trim().ToUpper() == categoryDTO.Name.Trim().ToUpper())
+                .Where((category) => category.Id != id)
+                .Any();
+
+            if(categoryExists)
+            {
+                ModelState.AddModelError("", "Category already exists");
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, ModelState);
+            }
+
+            Category category = _categoryRepository.GetCategory(id);
+            category.Name = categoryDTO.Name;
+            category.Id = id;
+
+            if(!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            if(!_categoryRepository.UpdateCategory(category))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }
